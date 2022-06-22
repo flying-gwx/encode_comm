@@ -11,7 +11,12 @@ args = parser.parse_args()
 encode_folder = args.encode_folder
 size_dict_folder = args.size_dict_folder
 videos = os.listdir(encode_folder)
-videos = ['06to07_BlueWorld', '07to08_BlueWorld', '08to09_BlueWorld', '09to10_BlueWorld', '10to11_BlueWorld' ]
+tmp_videos = []
+for video in videos:
+    if not (video[:4] == '5to6' or video[:6] =='15to16'):
+        tmp_videos.append(video)
+        
+videos = tmp_videos  
 for video in videos:
     all_parameters = os.listdir(os.path.join(encode_folder, video))
     all_parameters.sort()

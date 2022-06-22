@@ -1,4 +1,7 @@
-
+'''
+本模块想要计算用户的实际PSNR值
+现在没什么用，模块与tile_in_viewpoint重复了
+'''
 from PSNR import *
 import os
 import torch
@@ -7,19 +10,7 @@ from def_parser import *
 import time
 
 
-def read_average_mse(log_path):
-    '''
-    读取log中的mse, 返回tile的平均mse
-    '''
-    with open(log_path, mode = 'r') as f:
-        lines = f.readlines()
-    mse = []
-    for i in range(len(lines)):
-        # 找到mse_avg后面的数
-        data = lines[i].split(lines[i])
-        tmp_mse = data[1].split(':')[1]
-        mse.append(float(tmp_mse))
-    return np.mean(np.array(mse))
+
 
 
 # Get_Mask
@@ -42,7 +33,7 @@ if __name__ == "__main__":
     parser = basic_parser()
     args = parser.parse_args()
     # 对 5to6_Videos 计算 psnr
-    
+
     mp4_folder = '/data/wenxuan/4k_30fps'
     viewpoint_root = '/data/wenxuan/head-tracking-master'
     saved_path = '/data/wenxuan/GCN_data/is_tile_in_viewpoint_folder'
@@ -53,11 +44,11 @@ if __name__ == "__main__":
     for video in ALL_VIDEOS:
         t1 = time.time()
         t, video_name = video.split('_')
+        t_begin, t_end = t.split('to')
+        t_begin = int(t_begin)
+        t_end = int(t_end)
         total_viewpoint = Get_Viewpoint(viewpoint_root, os.path.join(mp4_folder, video_name + '.mp4'), video_name)
-        if t == "5to6":
-            viewpoint = total_viewpoint[:, 150:180, :]
-        else:
-            viewpoint = total_viewpoint[:, 450:480, :] 
+        viewpoint = total_viewpoint[:, 30*t_begin:30*t_end, :]
         clientNum = viewpoint.shape[0]
         frameNum = viewpoint.shape[1]
         video_dict = {}

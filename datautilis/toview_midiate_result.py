@@ -43,12 +43,6 @@ def view_moment():
     plt.plot(labels_list/max(labels_list), label = 'video label')
     plt.legend()
     plt.savefig('../../visualization/input_data_visualization/visio_mean_median.png')
-    # plt.plot(visio_result_npy[:, 1]/max_std, label = 'std value')
-    # plt.plot(visio_result_npy[:, 2]/max_third_moment, label = 'third moment value')
-    # plt.plot(labels_list/max(labels_list), label = 'video label')
-    # plt.xlabel('coding version')
-    # plt.legend()
-    # plt.savefig('../../visualization/input_data_visualization/visio_stastics.png')
 
 
 

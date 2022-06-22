@@ -12,6 +12,8 @@ def basic_parser():
     parser.add_argument('--size_dict_folder', type = str, default='/data/wenxuan/GCN_data/size_dict_folder')
     parser.add_argument('--PSNR_path', default = '/data/wenxuan/PSNR')
     parser.add_argument('--mp4_30fps_folder', default='/data/wenxuan/4k_30fps')
+    parser.add_argument('--device', default='cuda:1')
+    parser.add_argument('--transport_result_path', default = '/home/wenxuan/Data/result')
     return parser
 W_n = [30,15,12,10,8,6,5,4,3,2]
 H_n = [30,15,12,10,8,6,5,4,3,2]
@@ -24,3 +26,4 @@ for i in range(len(W_n)):
     W_size.append(int(3840 / W_n[i]))
 for j in range(len(H_n)):
     H_size.append(int(1920 / H_n[j]))
+qp = list(range(18, 43))

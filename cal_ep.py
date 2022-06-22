@@ -11,6 +11,44 @@ import numpy as np
 '''
 viewpoint_used now is a numpy, get from Get_view_port 
 '''
+def factP_user(sw,sh,a,b,viewpoint_used,W,H):
+    np_list=[]
+    NP=0
+    # 这里也没什么问题
+    # xx 为 纬度， yy为经度，
+    xx = viewpoint_used[..., 1].reshape( -1)
+    yy = viewpoint_used[..., 0].reshape(-1)
+    xx = xx.tolist()
+    yy = yy.tolist()
+    nmm_list = []
+    #取最大的nmm， 最小的smm，最大的emm，最小的wmm，计算得到结果作为这1s需要传输的tile的大小
+    # 计算得到相应的结果
+    for p in range(len(xx)):
+        nmm, smm, wmm, emm, jdcc = S_2D((math.pi*xx[p])/180, (math.pi*yy[p])/180, a, b)
+        # 根据 mask的方式去判断传输多少Ep，并进行计算
+        if 180-yy[p]<0.5*abs(jdcc):
+            nw1=math.ceil(W/sw)-math.floor((((180+wmm)*W)/360)/sw)
+            nw2=math.ceil((((180+emm)*W)/360)/sw)
+            nw=nw1+nw2
+            nh=math.ceil((((90+nmm)*H)/180)/sh)-math.floor((((90+smm)*H)/180)/sh)
+            nn=nw*nh
+            np=sw*sh*nn
+        elif yy[p]-(-180)<0.5*abs(jdcc):
+            nw1=math.ceil((((180+emm)*W)/360)/sw)
+            nw2=math.ceil(W/sw)-math.floor((((180+wmm)*W)/360)/sw)
+            nw=nw1+nw2
+            nh = math.ceil((((90 + nmm) * H) / 180) / sh) - math.floor((((90 + smm) * H) / 180) / sh)
+            nn = nw * nh
+            np = sw * sh * nn
+        else:
+            nw=math.ceil((((180+emm)*W)/360)/sw)-math.floor((((180+wmm)*W)/360)/sw)
+            nh = math.ceil((((90 + nmm) * H) / 180) / sh) - math.floor((((90 + smm) * H) / 180) / sh)
+            nn = nw * nh
+            np = sw * sh * nn
+        np_list.append(np)
+    for u in range(len(np_list)):
+        NP=NP+(1/len(np_list))*np_list[u]
+    return NP
 def factP(sw,sh,a,b,viewpoint_used,W,H):
     np_list=[]
     NP=0

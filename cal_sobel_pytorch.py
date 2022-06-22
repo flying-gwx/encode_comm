@@ -44,7 +44,7 @@ def edge_conv2d(im):
 if __name__ == "__main__":
     png_path = '/data/wenxuan/GCN_data/all_pngs'
     videos = os.listdir(png_path)
-    for video in videos[76:]:
+    for video in videos:
         sobel = {}
         for i in range(1, 31):
             if i > 1:

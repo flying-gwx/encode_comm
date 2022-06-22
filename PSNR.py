@@ -20,6 +20,19 @@ import ipdb
 
 root = r"/home/lhr1/gao_reproduce/data/"
 
+def read_average_mse(log_path):
+    '''
+    读取log中的mse, 返回tile的平均mse
+    '''
+    with open(log_path, mode = 'r') as f:
+        lines = f.readlines()
+    mse = []
+    for i in range(len(lines)):
+        # 找到mse_avg后面的数
+        data = lines[i].split(' ')
+        tmp_mse = data[1].split(':')[1]
+        mse.append(float(tmp_mse))
+    return np.mean(np.array(mse))
 
 def write_txt(txt_root, str_list):
     file_write_obj = open(txt_root, "w")
@@ -102,7 +115,7 @@ def Get_Weight(w, h):
 
 
 def Get_Mask(H, W, w, j, a=math.pi / 2, b=math.pi / 2):
-    result = torch.zeros((H, W), dtype=torch.float16)
+    result = torch.zeros((H, W), dtype=torch.float32)
     nm, sm, wm, em, jdcc = S_2D(w, j, a, b)
     wm += 180
     em += 180

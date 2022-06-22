@@ -32,39 +32,43 @@ if __name__ == "__main__":
     mp4_folder = '/data/wenxuan/4k_30fps'
     viewpoint_root = '/data/wenxuan/head-tracking-master'
     saved_path = '/data/wenxuan/GCN_data/is_tile_in_viewpoint_folder'
-    ALL_VIDEOS = ['AirShow','Surfing', 'Waterskiing',  'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
-    TRAIN_VIDEOS = ['Surfing','AirShow', 'StarryPolar', 'BlueWorld', 'LOL', 'Dota2', 'BTSRun']
-    for i in range(len(ALL_VIDEOS)):
-        ALL_VIDEOS[i] = '5to6_' + ALL_VIDEOS[i]
+  #  ALL_VIDEOS = ['AirShow','Surfing', 'Waterskiing',  'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
+    ALL_VIDEOS = ['StarWars', 'IRobot','WesternSichuan']
+    use_videos = []
     for video in ALL_VIDEOS:
+        use_videos.append('5to6' + '_' + video)
+    for video in ALL_VIDEOS:
+        for tmp_time in time_stamp:
+            use_videos.append(tmp_time + '_' +video )
+    for video in use_videos:
         t_1 = time.time()
         t, video_name = video.split('_')
         t_begin, t_end = t.split('to')
         t_begin = int(t_begin)
         t_end = int(t_end)
         total_viewpoint = Get_Viewpoint(viewpoint_root, os.path.join(mp4_folder, video_name + '.mp4'), video_name)
-       
         viewpoint = total_viewpoint[:, 30*t_begin:30*t_end, :]
-
         clientNum = viewpoint.shape[0]
         frameNum = viewpoint.shape[1]
-        video_dict = {}
+        if not os.path.exists(os.path.join(saved_path, video)):
+            os.mkdir(os.path.join(saved_path, video))
         for w in W_size:
             for h in H_size:
-                    x_list, y_list = get_left_top(args.WIDTH, args.HEIGHT, w, h)
-                    w_h_dict = {}
-                        # 判断tile是否在Mask内
-                    for i in range(clientNum):
-                        for j in range(frameNum):
-                            user_frame_dict = {}
-                            mask = Get_Mask(args.HEIGHT, args.WIDTH, viewpoint[i, j, 1], viewpoint[i, j, 0]).to('cuda:1')
-                            pixels = torch.sum(mask)
-                            for tile_idx in range(len(x_list)):
-                                parameter = '%04d_%04d_%04d_%04d'%(x_list[tile_idx], y_list[tile_idx], w, h)
-                                if (mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).any():
-                                    user_frame_dict[parameter] = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w])/pixels
-                            w_h_dict['%02d_%02d'%(i,j)] = user_frame_dict
-                    video_dict['%04dx%04d'%(w,h)] = w_h_dict
-        np.save(os.path.join(saved_path , '{}.npy'.format(video)), video_dict)
+                x_list, y_list = get_left_top(args.WIDTH, args.HEIGHT, w, h)
+                w_h_dict = {}
+                    # 判断tile是否在Mask内
+                for i in range(clientNum):
+                    for j in range(frameNum):
+                        user_frame_dict = {}
+                        mask = Get_Mask(args.HEIGHT, args.WIDTH, viewpoint[i, j, 1], viewpoint[i, j, 0]).to(args.device)
+                        # 转为float32,防止数值过大
+                        pixels = torch.sum(mask)
+                        for tile_idx in range(len(x_list)):
+                            parameter = '%04d_%04d_%04d_%04d'%(x_list[tile_idx], y_list[tile_idx], w, h)
+                            if (mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).any():
+                                # 得到比例
+                                user_frame_dict[parameter] = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w])/pixels
+                        w_h_dict['%02d_%02d'%(i,j)] = user_frame_dict
+                np.save(os.path.join(saved_path , video,  '%04dx%04d.npy'%(w,h)), w_h_dict)
         print('a video time is {}'.format(time.time() - t_1))
         print("a video {} saved".format(video))
