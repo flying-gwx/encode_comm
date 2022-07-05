@@ -1,63 +1,105 @@
+from email.policy import default
 import torch
 import numpy as np
 from torch import nn
 from PIL import Image
-import torch.nn.functional as F
-import cv2
+from PSNR import Get_Mask,get_partial_viewpoint
 import os 
-import matplotlib.pyplot as plt
+from def_parser import basic_parser
+from lib.featurelib import *
+import matplotlib.pyplot  as plt
 
-
-def edge_conv2d(im):
-    # 用nn.Conv2d定义卷积操作
-    # 注意pytorch 为 B， N， W,H
-    conv_op = nn.Conv2d(3, 3, kernel_size=3, padding=1, bias=False)
-    if im.shape[1] == 1:
-        channel_num = 1
+def return_mean_median_std(feature, device):
+    frame_result = []
+    if device == 'cpu':
+        frame_result.append(torch.mean(feature).numpy())
+        frame_result.append(torch.median(feature).numpy())
+        frame_result.append(torch.std(feature).numpy())
     else:
-        channel_num = 3
-    # 定义sobel算子参数
-    
-    sobel_kernel_horizonal = np.array([[-1, 0,1],[-2, 0,2],[-1,0,1]], dtype = 'float32')
-    sobel_kernel_vertical = np.array([[1,2,1], [0,0,0],[-1,-2,-1]], dtype = 'float32')
-    sobel_kernel_horizonal = sobel_kernel_horizonal.reshape((1, 1, 3, 3))
-    sobel_kernel_vertical = sobel_kernel_vertical.reshape((1,1,3,3))
-    # 将sobel算子转换为适配卷积操作的卷积核
-    if channel_num == 3:
-        sobel_kernel_vertical.repeat(sobel_kernel_vertical, 3 , axis = 1)
-        sobel_kernel_vertical.repeat(sobel_kernel_vertical, 3 , axis = 0)
-        sobel_kernel_horizonal.repeat(sobel_kernel_horizonal, 3, axis = 1)
-        sobel_kernel_horizonal.repeat(sobel_kernel_horizonal, 3, axis = 0)
-    # 卷积输出通道，这里我设置为3
-    
-    conv_op.weight.data = torch.from_numpy(sobel_kernel_horizonal)
-    horizon_result = conv_op(im)
-    conv_op.weight.data = torch.from_numpy(sobel_kernel_vertical)
-    vertical_result = conv_op(im)
-    horizon_result = horizon_result.squeeze()
-    vertical_result = vertical_result.squeeze()
-    result = torch.sqrt(horizon_result **2 + vertical_result**2)
-    # 将输出转换为图片格式
-    
-    return horizon_result.detach().numpy(), vertical_result.detach().numpy(), result.detach().numpy()
+        frame_result.append(torch.mean(feature).cpu().numpy())
+        frame_result.append(torch.median(feature).cpu().numpy())
+        frame_result.append(torch.std(feature).cpu().numpy())
+    return frame_result
 
+def return_mean_std(feature, device):
+    frame_result = []
+    if device == 'cpu':
+        frame_result.append(torch.mean(feature).numpy())
+        frame_result.append(torch.std(feature).numpy())
+    else:
+        frame_result.append(torch.mean(feature).cpu().numpy())
+        frame_result.append(torch.std(feature).cpu().numpy())
+    return frame_result
+
+def add_parser(parser):
+    parser.add_argument('--mask_flag', default = 'weighted_mask')
+    parser.add_argument('--feature_flag', default = 'laplace')
+    return parser
 if __name__ == "__main__":
     png_path = '/data/wenxuan/GCN_data/all_pngs'
-    videos = os.listdir(png_path)
+    parser = basic_parser()
+    args = parser.parse_args()
+    mp4_folder = '/data/wenxuan/4k_30fps'
+    viewpoint_root = '/data/wenxuan/head-tracking-master'
+    feature_saved_path = '/data/wenxuan/GCN_data/no_mask_laplace_feature'
+    if not os.path.exists(feature_saved_path):
+        os.mkdir(feature_saved_path)
+    mask_flag = 'no_mask'
+    feature_flag = 'laplace'
+    device = args.device
+    is_normalized = True
+    frameNum = 30
+    ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
+    videos = []
+    for video in ALL_VIDEOS:
+        videos.append('06to07_' + video)
+        videos.append('07to08_' + video)
+        videos.append('08to09_' + video)
+        videos.append('09to10_' + video)
+        videos.append('10to11_' + video)
+    # videos.append('07to08_AirShow')
+    # videos.append('08to09_AirShow')
+    # videos.append('09to10_AirShow')
+    # videos.append('10to11_AirShow')
     for video in videos:
-        sobel = {}
-        for i in range(1, 31):
-            if i > 1:
-                im_1 = Image.open(os.path.join(png_path, video, '%02d.png'%(i))).convert('L')
-                im = Image.open(os.path.join(png_path, video, '%02d.png'%(i - 1 ))).convert('L')
-                im = np.array(im, dtype = 'float32')
-                im_1 = np.array(im_1, dtype = 'float32')
-                input = im_1 - im
-            else:
-                input = Image.open(os.path.join(png_path, video, '%02d.png'%(i))).convert('L')
-                input = np.array(input, dtype='float32')
-            input = torch.from_numpy(input.reshape(1,1, input.shape[0], input.shape[1]))
-            horizon, vertical, result = edge_conv2d(input)
+        if mask_flag == 'no_mask':
+            all_mask = torch.ones((args.HEIGHT, args.WIDTH),device = args.device)
+        elif mask_flag =='ones_mask':
+            all_mask = get_GOP_mask(viewpoint_root, mp4_folder, video, device = args.device, is_all_one = True)
+        elif mask_flag == 'weighted_mask':
+            all_mask = get_GOP_mask(viewpoint_root, mp4_folder, video, device = args.device, is_all_one = False)
+        
+        feature = []
+        if feature_flag == 'sobel':
+            sobel = cal_video_feature(png_path, video, device=args.device)
+            for frame in range(1,frameNum + 1):
+                view_sobel = sobel['%02d'%(frame)] * all_mask
+                sobel_result = return_mean_median_std(view_sobel, args.device)
+                feature.append(sobel_result)
+        elif feature_flag == 'laplace':
+            laplace = cal_video_feature(png_path, video,device=args.device, method = 'laplace')
+            
+            for frame in range(1,frameNum + 1):
+                view_laplace = laplace['%02d'%(frame)] * all_mask
+                plt.imshow(view_laplace[0, 0, :,:].cpu().numpy(), cmap= 'gray')
+                plt.colorbar()
+                plt.savefig('lapalce.png')
+                plt.close()
+                laplace_result = return_mean_median_std(view_laplace, args.device)
+                feature.append(laplace_result)
+        elif feature_flag == 'robert':
+            robert = cal_video_feature(png_path, video,device=args.device, method = 'robert')
+            for frame in range(1,frameNum + 1):
+                view_robert = robert['%02d'%(frame)] * all_mask
+                robert_result = return_mean_median_std(view_robert, args.device)
+                feature.append(robert_result)
+        elif feature_flag == 'gaussian_laplace':
+            laplace = cal_video_feature(png_path, video,device=args.device, method = 'gaussian_laplace')
+            for frame in range(1,frameNum + 1):
+                view_laplace = laplace['%02d'%(frame)] * all_mask
+                laplace_result = return_mean_median_std(view_laplace, args.device)
+                feature.append(laplace_result)
+        feature = np.stack(feature, axis = 0)
+        np.save(os.path.join(feature_saved_path, video + '.npy'), feature)
 
-            sobel['%02d'%(i)] = result
-        np.save( os.path.join('/data/wenxuan/png_sobel','%s.npy'%(video)),sobel)
+        print("feature saved!")

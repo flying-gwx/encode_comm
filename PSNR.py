@@ -18,21 +18,7 @@ import ipdb
 #logging.basicConfig(filename='./ICASSP.log', level=logging.INFO)
 
 
-root = r"/home/lhr1/gao_reproduce/data/"
 
-def read_average_mse(log_path):
-    '''
-    读取log中的mse, 返回tile的平均mse
-    '''
-    with open(log_path, mode = 'r') as f:
-        lines = f.readlines()
-    mse = []
-    for i in range(len(lines)):
-        # 找到mse_avg后面的数
-        data = lines[i].split(' ')
-        tmp_mse = data[1].split(':')[1]
-        mse.append(float(tmp_mse))
-    return np.mean(np.array(mse))
 
 def write_txt(txt_root, str_list):
     file_write_obj = open(txt_root, "w")
@@ -203,6 +189,14 @@ def Get_Viewpoint(
     # print(result)
     return result
 
+def get_partial_viewpoint(viewpoint_root, mp4_folder, time_video, clientNum=40):
+    t, video_name = time_video.split('_')
+    t_begin, t_end = t.split('to')
+    t_begin = int(t_begin)
+    t_end = int(t_end)
+    total_viewpoint = Get_Viewpoint(viewpoint_root, os.path.join(mp4_folder, video_name + '.mp4'), video_name)
+    viewpoint = total_viewpoint[:, 30*t_begin:30*t_end, :]
+    return viewpoint
 
 def Cal_WSPSNRv_WSMSEv(
     vid1_root, vid2_root, mp4Vid_root, W, H, viewpoint_root, yuvvidName, device
@@ -265,9 +259,7 @@ def Cal_WSPSNRv_WSMSEv(
 def Cal_WSPSNRv_WSMSEv_vidbased(
     vid1, vid2_root, mp4Vid_root, W, H, viewpoint_root, yuvvidName, device
 ):
-    t1 = time.time()
     vid2 = Read_Yuv_Vid(vid2_root, H, W,device)
-    t2 = time.time()
 #    print("yuv time is {}".format(t2 - t1))
     t, vidName = yuvvidName.split("_")
 
@@ -288,10 +280,6 @@ def Cal_WSPSNRv_WSMSEv_vidbased(
             # print('vx,vy',viewpoint[i,j,0],viewpoint[i,j,1])
             t1 = time.time()
             mask[j, :, :, 0] = Get_Mask(H, W, viewpoint[i, j, 1], viewpoint[i, j, 0])
-        # print(vid1.shape)
-        # print(vid2.shape)
-        # print(mask.shape)
-        # print(weight.shape)
         if torch.sum((mask).float()) == 0:
             print("cl", i)
             break

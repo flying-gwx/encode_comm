@@ -67,7 +67,11 @@ if __name__ == "__main__":
                             parameter = '%04d_%04d_%04d_%04d'%(x_list[tile_idx], y_list[tile_idx], w, h)
                             if (mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).any():
                                 # 得到比例
-                                user_frame_dict[parameter] = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w])/pixels
+                                view_part = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).cpu().numpy()/pixels
+                                if args.device == 'cpu':
+                                    user_frame_dict[parameter] = view_part.numpy()
+                                else:
+                                    user_frame_dict[parameter] = view_part.cpu().numpy()
                         w_h_dict['%02d_%02d'%(i,j)] = user_frame_dict
                 np.save(os.path.join(saved_path , video,  '%04dx%04d.npy'%(w,h)), w_h_dict)
         print('a video time is {}'.format(time.time() - t_1))

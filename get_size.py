@@ -1,7 +1,7 @@
 import os 
 import numpy as np
 import csv
-from def_parser import basic_parser
+from def_parser import ALL_VIDEOS, basic_parser
 
 parser = basic_parser()
 args = parser.parse_args()
@@ -10,13 +10,13 @@ args = parser.parse_args()
 '''
 encode_folder = args.encode_folder
 size_dict_folder = args.size_dict_folder
-videos = os.listdir(encode_folder)
-tmp_videos = []
-for video in videos:
-    if not (video[:4] == '5to6' or video[:6] =='15to16'):
-        tmp_videos.append(video)
-        
-videos = tmp_videos  
+videos = []
+#ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
+ALL_VIDEOS = [ 'Surfing', 'Waterskiing']
+time_stamp = ['07to08', '08to09', '09to10', '10to11']
+for video in ALL_VIDEOS:
+    for tmp_time in time_stamp:
+        videos.append(tmp_time + '_' + video)
 for video in videos:
     all_parameters = os.listdir(os.path.join(encode_folder, video))
     all_parameters.sort()

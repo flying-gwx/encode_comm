@@ -3,7 +3,7 @@ def basic_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--ffmpeg_path', type=str, default =r'/home/wenxuan/ffmpeg-4.4.2/ffmpeg' )
     parser.add_argument('--croped_yuv_folder', type = str, default= r'/data/wenxuan/croped_yuvs')
-    parser.add_argument('--input_yuv_folder', type = str, default= r'/data/wenxuan/all_yuvs')
+    parser.add_argument('--input_yuv_folder', type = str, default= r'/data/wenxuan/yuvs')
     parser.add_argument('--encode_folder', type = str, default = '/data/wenxuan/encode')
     parser.add_argument('--HEIGHT', type=int, default = 1920)
     parser.add_argument('--WIDTH', type=int, default=3840)
@@ -14,13 +14,14 @@ def basic_parser():
     parser.add_argument('--mp4_30fps_folder', default='/data/wenxuan/4k_30fps')
     parser.add_argument('--device', default='cuda:1')
     parser.add_argument('--transport_result_path', default = '/home/wenxuan/Data/result')
+    parser.add_argument('--viewport_tiles', default='/data/wenxuan/GCN_data/tile_in_viewpoint_npy')
     return parser
 W_n = [30,15,12,10,8,6,5,4,3,2]
 H_n = [30,15,12,10,8,6,5,4,3,2]
 W_size =[]
 H_size = []
-#ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
-ALL_VIDEOS = ['StarryPolar', 'F5Fighter','BTSRun']
+ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
+# ALL_VIDEOS = ['StarryPolar', 'F5Fighter','BTSRun']
 time_stamp = ['06to07', '07to08', '08to09', '09to10', '10to11']
 for i in range(len(W_n)):
     W_size.append(int(3840 / W_n[i]))

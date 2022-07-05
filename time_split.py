@@ -16,7 +16,8 @@ args = parser.parse_args()
 result_folder = '/data/wenxuan/croped_mp4s'
 yuvs_folder =  '/data/wenxuan/yuvs'
 # 得到 yuv文件
-for video in ALL_VIDEOS:
+split_videos = ['Symphony']
+for video in split_videos:
     crop_video_folder = os.path.join(result_folder, video)
     if not os.path.exists(crop_video_folder):
         os.mkdir(crop_video_folder)

@@ -8,26 +8,28 @@ from multiprocessing import Pool
 import subprocess
 from def_parser import *
 import numpy as np
+
+from lib.psnrlib import return_all_tile_union
 '''
 假设crop_yuv已经存在
 '''
 def run_comm(comm):
-    subprocess.run(comm, shell=True)
+    subprocess.run(comm, shell=True, stdout=open('/dev/null', 'w'), stderr=subprocess.STDOUT, check=True)
 
 parser = basic_parser()
 args  = parser.parse_args()
-yuv_list = os.listdir(args.croped_yuv_folder)
-videos = ['F5Fighter','BTSRun']
-# 先测试一个视频试试 AirShow
-time_stamp = ['06to07', '07to08', '08to09', '09to10', '10to11']
-is_tile_in_viewpoint_folder = '/data/wenxuan/GCN_data/is_tile_in_viewpoint_folder'
+# AirShow Done
+videos =  [ 'BlueWorld']
+# videos = ['F5Fighter']
+Notencode_video = ['Surfing','Waterskiing', 'WaitingForLove', 'LOL']
+time_stamp = ['07to08', '08to09','09to10', '10to11']
+is_tile_in_viewpoint_folder = '/data/wenxuan/GCN_data/tile_in_viewpoint_npy'
 qp = list(range(18, 43))
 client_num = 40
 yuv_list = []
 for video in videos:
     for time in time_stamp:
         yuv_list.append(time + '_' + video + '.yuv')
-
 
 for yuv in yuv_list:
     psnr_yuv_path = os.path.join(args.PSNR_path, yuv[:-4])
@@ -39,12 +41,9 @@ for yuv in yuv_list:
             path = os.path.join(is_tile_in_viewpoint_folder, yuv[:-4], '%04dx%04d.npy'%(w, h))
             tiles = np.load(path, allow_pickle=True).item()
             # 对所有用户的tile求交集
-            tmp_tile = tiles['%02d_00'%(0)].keys()
             hevcs = []
-            for user_id in range(client_num):    
-                for frame_num in range(1, 30):
-                    tmp_tile = tmp_tile | tiles['%02d_%02d'%(user_id, frame_num)].keys()
-            for encode_tile in tmp_tile:
+            all_tile = return_all_tile_union(tiles)
+            for encode_tile in all_tile:
                 hevcs.append(encode_tile + '.hevc')
             comm_list = []
             for tmp_qp in qp:
@@ -54,18 +53,14 @@ for yuv in yuv_list:
                 yuv_path = os.path.join(args.croped_yuv_folder, yuv[:-4], '%04dx%04d'%(w,h))
                 hevc_path = os.path.join(args.encode_folder, yuv[:-4], '%04d_%04dx%04d'%(tmp_qp, w,h))
                 for hevc in hevcs:
-                    comm = ("ffmpeg -r 30 -i %s -s %dx%d "
-                    "-r 30 -pix_fmt yuv420p -i %s -lavfi psnr='%s' -f null -"%(os.path.join(hevc_path, hevc), w, h, os.path.join(yuv_path, '%s.yuv'%(hevc[:-5])), os.path.join(psnr_yuv_path,  '%04d_%04dx%04d'%(tmp_qp, w,h), hevc[:-5]+'.log'))
-                    )
-                    comm_list.append(comm)
-    
+                    if not os.path.exists(os.path.join(psnr_yuv_path,  '%04d_%04dx%04d'%(tmp_qp, w,h), hevc[:-5]+'.log')):
+                        comm = ("ffmpeg -r 30 -i %s -f rawvideo -s %dx%d "
+                        "-r 30 -pix_fmt yuv420p -i %s -lavfi psnr='%s' -f null -"%(os.path.join(hevc_path, hevc), w, h, os.path.join(yuv_path, '%s.yuv'%(hevc[:-5])), os.path.join(psnr_yuv_path,  '%04d_%04dx%04d'%(tmp_qp, w,h), hevc[:-5]+'.log'))
+                        )
+                        comm_list.append(comm)
             with Pool(args.cpu_num) as p:
                 p.map(run_comm, comm_list)
     print("{} done!".format(yuv))
     subprocess.run('rm -r %s'%(os.path.join(args.croped_yuv_folder,  yuv[:-4])),shell= True)
     print("{} deleted!".format(os.path.join(args.croped_yuv_folder,  yuv[:-4])))
 
-
-                    
-                    # hvec 文件夹命名：
-                    # 记录每个hevc的size
