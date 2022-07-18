@@ -11,8 +11,8 @@ if __name__ == "__main__":
     parser = basic_parser()
     args = parser.parse_args()
  #   ALL_VIDEOS = ['WaitingForLove','AirShow','Surfing', 'Waterskiing', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'LOL']
-    ALL_VIDEOS = [ 'Surfing', 'Waterskiing']
-    time_stamp = ['07to08', '08to09', '09to10', '10to11']
+    ALL_VIDEOS = [ 'Symphony']
+    time_stamp = ['06to07','07to08', '08to09', '09to10', '10to11']
     tile_in_viewpoint_path = '/data/wenxuan/GCN_data/tile_in_viewpoint_npy'
     # 读入video
     for tmp_time in time_stamp:

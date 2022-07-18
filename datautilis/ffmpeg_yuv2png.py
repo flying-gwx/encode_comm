@@ -4,7 +4,7 @@ import os
 
 # 5to6_Dubai.yuv数据有问题，不要用
 yuvs_folder = '/data/wenxuan/yuvs'
-videos = os.listdir(yuvs_folder)
+videos = ['WesternSichuan']
 pngs_path = '/data/wenxuan/GCN_data/all_pngs'
 
 for video in videos:

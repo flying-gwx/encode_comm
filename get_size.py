@@ -12,8 +12,8 @@ encode_folder = args.encode_folder
 size_dict_folder = args.size_dict_folder
 videos = []
 #ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
-ALL_VIDEOS = [ 'Surfing', 'Waterskiing']
-time_stamp = ['07to08', '08to09', '09to10', '10to11']
+ALL_VIDEOS = [ 'Symphony']
+time_stamp = ['06to07','07to08', '08to09', '09to10', '10to11']
 for video in ALL_VIDEOS:
     for tmp_time in time_stamp:
         videos.append(tmp_time + '_' + video)

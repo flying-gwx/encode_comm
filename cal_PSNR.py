@@ -19,10 +19,10 @@ def run_comm(comm):
 parser = basic_parser()
 args  = parser.parse_args()
 # AirShow Done
-videos =  [ 'BlueWorld']
+videos =  [ 'Symphony']
 # videos = ['F5Fighter']
 Notencode_video = ['Surfing','Waterskiing', 'WaitingForLove', 'LOL']
-time_stamp = ['07to08', '08to09','09to10', '10to11']
+time_stamp = ['06to07','07to08', '08to09','09to10', '10to11']
 is_tile_in_viewpoint_folder = '/data/wenxuan/GCN_data/tile_in_viewpoint_npy'
 qp = list(range(18, 43))
 client_num = 40

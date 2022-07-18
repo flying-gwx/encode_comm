@@ -49,18 +49,15 @@ if __name__ == "__main__":
     device = args.device
     is_normalized = True
     frameNum = 30
-    ALL_VIDEOS = ['Surfing', 'Waterskiing', 'AirShow', 'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
-    videos = []
+    ALL_VIDEOS = ['Symphony']
+    
+    videos = ['5to6_WesternSichuan']
     for video in ALL_VIDEOS:
         videos.append('06to07_' + video)
         videos.append('07to08_' + video)
         videos.append('08to09_' + video)
         videos.append('09to10_' + video)
         videos.append('10to11_' + video)
-    # videos.append('07to08_AirShow')
-    # videos.append('08to09_AirShow')
-    # videos.append('09to10_AirShow')
-    # videos.append('10to11_AirShow')
     for video in videos:
         if mask_flag == 'no_mask':
             all_mask = torch.ones((args.HEIGHT, args.WIDTH),device = args.device)

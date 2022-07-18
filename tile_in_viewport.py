@@ -31,12 +31,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     mp4_folder = '/data/wenxuan/4k_30fps'
     viewpoint_root = '/data/wenxuan/head-tracking-master'
-    saved_path = '/data/wenxuan/GCN_data/is_tile_in_viewpoint_folder'
+    saved_path = '/data/wenxuan/GCN_data/tile_in_viewpoint_npy'
   #  ALL_VIDEOS = ['AirShow','Surfing', 'Waterskiing',  'F5Fighter', 'StarryPolar', 'BlueWorld', 'BTSRun',  'WaitingForLove',  'LOL']
-    ALL_VIDEOS = ['StarWars', 'IRobot','WesternSichuan']
+    ALL_VIDEOS = ['Symphony']
     use_videos = []
-    for video in ALL_VIDEOS:
-        use_videos.append('5to6' + '_' + video)
     for video in ALL_VIDEOS:
         for tmp_time in time_stamp:
             use_videos.append(tmp_time + '_' +video )
@@ -67,7 +65,7 @@ if __name__ == "__main__":
                             parameter = '%04d_%04d_%04d_%04d'%(x_list[tile_idx], y_list[tile_idx], w, h)
                             if (mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).any():
                                 # 得到比例
-                                view_part = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w]).cpu().numpy()/pixels
+                                view_part = torch.sum(mask[y_list[tile_idx]:y_list[tile_idx] + h, x_list[tile_idx]:x_list[tile_idx]+w])/pixels
                                 if args.device == 'cpu':
                                     user_frame_dict[parameter] = view_part.numpy()
                                 else:

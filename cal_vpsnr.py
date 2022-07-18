@@ -38,8 +38,8 @@ if __name__ == "__main__":
     viewpoint_root = '/data/wenxuan/head-tracking-master'
     save_path = '/data/wenxuan/GCN_data/vpsnr_folder/'
   #  ALL_VIDEOS = [ 'BTSRun','AirShow','Surfing', 'Waterskiing',  'F5Fighter', 'StarryPolar', 'BlueWorld',  'WaitingForLove',  'LOL']
-    ALL_VIDEOS =[ 'StarryPolar']
-    time_stamp = ['07to08', '08to09', '09to10', '10to11']
+    ALL_VIDEOS =[ 'Symphony']
+    time_stamp = ['06to07','07to08', '08to09', '09to10', '10to11']
     cal_videos = []
     for video in ALL_VIDEOS:
         for tmp_time in time_stamp:

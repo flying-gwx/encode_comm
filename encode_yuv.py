@@ -3,7 +3,7 @@ import multiprocessing
 import subprocess
 import argparse
 from def_parser import basic_parser
-from multiprocessing import Pool
+from pathos.multiprocessing import ProcessingPool as Pool
 '''
 把crop好的yuv编码为hevc文件
 '''
